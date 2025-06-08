@@ -10,10 +10,12 @@ from sqlalchemy import (
     Numeric,
     BigInteger,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, REAL
+from sqlalchemy.dialects.postgresql import ARRAY, REAL, BYTEA
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.dialects.postgresql import BYTEA
+from pgvector.sqlalchemy import Vector
 
-DATABASE_URL = "postgresql://konstantinokriashvili:1234@localhost:5432/postgres"
+DATABASE_URL = "postgresql://_enter_:1234@localhost:5432/postgres"
 
 engine = create_engine(
     DATABASE_URL,
@@ -33,30 +35,24 @@ SessionLocal = sessionmaker(
 metadata = MetaData()
 
 # Таблица news
-'''news = Table(
+news = Table(
     'news',
     metadata,
-    Column('news_id', Integer, primary_key=True, autoincrement=True),
-    Column('title', Text, nullable=False),
-    Column('source', Text),
-    Column('published_time', TIMESTAMP(timezone=True), nullable=False),
-    Column('content', Text),
-    Column('sentiment', Numeric, default=0),
-    Column('surprise', Numeric, default=0),
-    Column('vector', ARRAY(REAL), default=list),
-    Column('priority', Integer, default=0),
-    Column('cluster_id', Integer, default=0),
-    Column('tickers', ARRAY(Text), default=list),
-    Column('event_type', Integer, default=0),
-    Column('users', ARRAY(BigInteger), default=list),
-)'''
+    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('text', Text, nullable=False),
+    Column('ticker', ARRAY(Text), nullable=False),
+    Column('polarity', Text, nullable=False),
+    Column('intensity', Integer, nullable=False),
+    Column('minhash', BYTEA, nullable=False),  # сериализованный MinHash
+    Column('embedding', Vector(384), nullable=False),  # векторные вложения (размерность 384)
+)
 
 # Таблица users с event_type как массив строк
 users = Table(
     'users',
     metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
-    Column('filter', Text),
+    Column('filter', ARRAY(Text), nullable=False),
     Column('style', Numeric, default=0),
     Column('noise_tolerance', Integer, default=10),
     Column('event_type', ARRAY(Text), default=list),
@@ -74,7 +70,7 @@ def get_db_session():
 def get_db_connection():
     return psycopg2.connect(
         dbname="postgres",
-        user="konstantinokriashvili",
+        user="_enter_",
         password="1234",
         host="localhost",
         port=5432,

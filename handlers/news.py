@@ -7,34 +7,57 @@ router = Router()
 @router.callback_query(F.data == "news")
 async def handle_news(callback: types.CallbackQuery):
     await callback.answer()
+    tg_id = callback.from_user.id
+
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
-            # Берём, например, 10 самых свежих новостей
-            cur.execute("""
-                SELECT title, content, published_time
-                FROM news
-                ORDER BY published_time DESC
-                LIMIT 10
-            """)
+            # 1) Читаем массив фильтра (TEXT[])
+            cur.execute(
+                "SELECT filter FROM users WHERE telegram_id = %s",
+                (tg_id,)
+            )
+            row = cur.fetchone()
+            tickers = row[0] or []  # если NULL — получим []
+
+            # 2) Если пользователь указал тикеры — проверяем equality ANY(),
+            #    иначе — отдаем все новости
+            if tickers:
+                cur.execute(
+                    """
+                    SELECT text
+                    FROM news
+                    WHERE ticker = ANY(%s)
+                    ORDER BY id DESC
+                    LIMIT 10
+                    """,
+                    (tickers,)
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT text
+                    FROM news
+                    ORDER BY id DESC
+                    LIMIT 10
+                    """
+                )
             rows = cur.fetchall()
     finally:
         conn.close()
 
+    # 3) Отправляем ответы
     if not rows:
-        return await callback.message.answer(
-            "Пока новостей нет 😔", reply_markup=main_kb
+        await callback.message.answer(
+            "Пока новостей нет 😔",
+            reply_markup=main_kb
         )
+        return
 
-    for title, summary, published_at in rows:
-        # Форматируем дату
-        ts = published_at.strftime("%d.%m.%Y %H:%M")
-        # Составляем Markdown-сообщение
-        text = (
-            f"*{title}*\n"
-            f"_{ts}_\n\n"
-            f"{summary}\n\n"
-        )
-        await callback.message.answer(text, parse_mode="Markdown")
+    for (text,) in rows:
+        await callback.message.answer(text)
 
-    await callback.message.answer("Это все новости.", reply_markup=main_kb)
+    await callback.message.answer(
+        "Это все новости.",
+        reply_markup=main_kb
+    )

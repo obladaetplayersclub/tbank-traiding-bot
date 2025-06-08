@@ -43,40 +43,36 @@ def save_tree(tree: ET.ElementTree, path: Path):
     tree.write(path, encoding="utf-8", xml_declaration=True)
     print(f"RSS сохранён в {path}")
 
-def add_title(tree: ET.ElementTree) -> tuple[str, datetime, str, str]:
-    titles = []
-    root = tree.getroot()
-    for item in root.findall(".//item"):
-        title = item.find("title")
-        date_str = item.find("pubDate")
-        url = item.find("link")
-        if date_str is not None and title is not None and title.text is not None:
-            dt = datetime.strptime(date_str.text.strip(), "%a, %d %b %Y %H:%M:%S %z")
-            formatted_date = dt.strftime("%d %B, %H:%M")
-            url_1 = url.text.strip()
-            url_txt = requests.get(url_1, timeout=10)
-            soup = BeautifulSoup(url_txt.text, "lxml")
-            other_part = soup.find("div", class_="topic-body__content")
-            other_paragraphs = other_part.find_all("p", class_="topic-body__content-text")
-            text_paragraphs2 = [p.get_text(strip=True) for p in other_paragraphs]
-            article_txt = "\n".join(text_paragraphs2)
-            article_txt = article_txt.replace("\u00A0", " ")
-            titles.append((title.text, formatted_date, url_1, article_txt))
-    return titles
+def get_article_text(url: str) -> str:
+    try:
+        url_txt = requests.get(url, timeout=10)
+        url_txt.raise_for_status()
+        soup = BeautifulSoup(url_txt.text, "lxml")
+        content = soup.find("div", class_="topic-body__content")
+        if not content:
+            return "[Не удалось найти текст статьи]"
+        paragraphs = content.find_all("p", class_="topic-body__content-text")
+        text = "\n".join(p.get_text(strip=True) for p in paragraphs)
+        return text.replace("\u00A0", " ").strip()
+    except Exception as e:
+        return f"[Ошибка при парсинге: {e}]"
 
-def save_title_to_json(titles: tuple[str, datetime, str, str]):
-    all_links = []
-    for title, formatted_date, url, article_txt in titles:
-        all_links.append({"title" : title, "data" : formatted_date, "url" : url, "text" : article_txt})
-    with open(JSON_FILE, "w", encoding="utf-8") as f:
-        json.dump(all_links, f, ensure_ascii=False, indent=2)
-    print("Данные в JSON записаны!")
+# def save_title_to_json(titles: tuple[str, datetime, str, str]):
+#     all_links = []
+#     for title, formatted_date, url, article_txt in titles:
+#         all_links.append({"title" : title, "data" : formatted_date, "url" : url, "text" : article_txt})
+#     with open(JSON_FILE, "w", encoding="utf-8") as f:
+#         json.dump(all_links, f, ensure_ascii=False, indent=2)
+#     print("Данные в JSON записаны!")
 
-def get_jsons(titles: tuple[str, datetime, str, str]) -> set:
-    all_links = set()
-    for title, formatted_date, url, article_txt in titles:
-        all_links.add(article_txt)
-    return all_links
+def collect_set() -> set:
+    descriptions = set()
+    feed = fed_pars(SRC_RSS_URL)
+    for entry in feed.entries[:MAX_ITEMS]:
+        article_text = get_article_text(entry.link)
+        if article_text:
+            descriptions.add(article_text)
+    return descriptions
 
 def main():
     first_run = True
@@ -93,8 +89,8 @@ def main():
             rss_tree = add_el(feed)
             save_tree(rss_tree, OUT_FILE)
             # save_title_to_json(add_title(rss_tree))
-            s = get_jsons(add_title(rss_tree))
-            print(s)
+            # s = get_jsons(add_title(rss_tree))
+            # print(s)
             print("лоз")
         except KeyboardInterrupt:
             raise KeyboardInterrupt

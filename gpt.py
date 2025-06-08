@@ -1,9 +1,10 @@
 import requests, uuid, time
+import os
 
-API_BASE = "https://gpt.orionsoft.ru/api/External"
-API_KEY = "OrVrQoQ6T43vk0McGmHOsdvvTiX446RJ"
+API_BASE = os.getenv("API_BASE")
+API_KEY = os.getenv("API_KEY")
 OSC = 12
-USER = "TeamR8itdDS9UG1j"
+USER = os.getenv("USER")
 
 def new_dialog_id():
     return f"{USER}_{uuid.uuid4().hex}"

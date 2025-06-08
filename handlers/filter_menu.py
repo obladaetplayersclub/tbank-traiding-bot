@@ -42,7 +42,10 @@ async def process_tickers(message: types.Message, state: FSMContext):
 
     if not valid:
         await state.clear()
-        return await message.answer("❌ Не найдено валидных тикеров", reply_markup=filter_kb)
+        return await message.answer(
+            "❌ Не найдено валидных тикеров",
+            reply_markup=filter_kb
+        )
 
     conn = get_db_connection()
     with conn:
@@ -76,14 +79,18 @@ async def view_filter(callback: types.CallbackQuery):
             cur.execute("SELECT filter FROM users WHERE telegram_id = %s", (tg_id,))
             row = cur.fetchone()
 
-    if not (row and row[0]):
+    raw = row[0] if row else None
+
+    if not raw:
+        items = []
+    elif isinstance(raw, list):
+        items = raw
+    else:
+        items = [tok for tok in raw.strip("{}").split(",") if tok]
+
+    if not items:
         text = "<i>Фильтр не задан.</i>"
     else:
-        raw = row[0]
-        if isinstance(raw, str):
-            items = [t.strip() for t in raw.strip("{}").split(",") if t.strip()]
-        else:
-            items = raw
         text = "<b>Ваш текущий фильтр:</b>\n" + "\n".join(f"• {t}" for t in items)
 
     await callback.message.edit_text(
@@ -102,14 +109,14 @@ async def delete_filter(callback: types.CallbackQuery):
     with conn:
         with conn.cursor() as cur:
             logging.info(f"Очищаем фильтр для {tg_id}")
+            # Обнуляем массив фильтра
             cur.execute(
                 "UPDATE users SET filter = ARRAY[]::text[] WHERE telegram_id = %s",
                 (tg_id,)
             )
 
     await callback.message.answer(
-        "✅ Фильтр очищен.",
-        reply_markup=filter_kb
+        "✅ Фильтр очищен.", reply_markup=filter_kb
     )
 
 

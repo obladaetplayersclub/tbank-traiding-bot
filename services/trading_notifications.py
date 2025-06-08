@@ -3,7 +3,6 @@ from db.connector import get_db_connection
 
 
 async def send_trading_start(bot: Bot):
-    """Уведомление о начале торгов"""
     conn = get_db_connection()
     try:
         with conn:
@@ -20,7 +19,6 @@ async def send_trading_start(bot: Bot):
 
 
 async def send_trading_end(bot: Bot, additional_message: str = None):
-    """Уведомление о завершении торгов"""
     conn = get_db_connection()
     try:
         with conn:

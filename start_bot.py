@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import BOT_TOKEN
-from db.connector import engine, metadata                             # ← импортируем
+from db.connector import engine, metadata
 
 from handlers.start import router as start_router
 from handlers.news import router as news_router
@@ -23,8 +23,8 @@ dp.include_router(filter_router)
 
 async def main():
     # создаём таблицы при старте
-    metadata.create_all(engine)                                               # ← вызываем
-    logging.info("✅ Таблицы в БД проверены и созданы, запускаю бота…")
+    metadata.create_all(engine)
+    logging.info("Таблицы в БД проверены и созданы, запускаю бота")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":

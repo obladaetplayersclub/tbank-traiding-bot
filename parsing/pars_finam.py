@@ -75,10 +75,6 @@ def main():
     print(f"Старт парсинга Finam, интервал {delay} с")
     while True:
         try:
-            #xml_text = get_resp(url)
-            #feed = get_xml_dict(xml_text)
-            #news = collect_items(feed)
-            #write_json(news)
             print(collect_set())
             print("Новости обновлены", flush=True)
         except Exception as err:

@@ -107,17 +107,17 @@ def add_news(checker, news_list, ticker_lookup, ticker_list):
         #print(item)
 
     # 4. Обработка каждой новости
-    #for news in news_list:
-    for js in dict_list:
+    for news in news_list:
+    #or js in dict_list:
         #print(f"=== Новость ===\n{news}")
 
         # 4.1. Базовая детекция тикеров
-        #tickers = set(detect_tickers(news, ticker_lookup, ticker_list))
+        tickers = set(detect_tickers(news, ticker_lookup, ticker_list))
 
         # 4.2. Добыча доп. данных через GPT
-        #data = get_gpt_data(news)
-        data = js
-        tickers = set()
+        data = get_gpt_data(news)
+        #data = js
+        #tickers = set()
         # data['tickers'] — фрагменты текста для доп. детекции
         for fragment in data.get('tickers', []):
             tickers.update(detect_tickers(fragment, ticker_lookup, ticker_list))
@@ -137,7 +137,7 @@ def add_news(checker, news_list, ticker_lookup, ticker_list):
 
         # 4.3. Проверяем и добавляем, если уникальна
         print(data)
-        if checker.add_news(text = text, tickers = tickers, polarity = polarity, intensity = intensity):
+        if checker.add_news(text = text, tickers = list(tickers), polarity = polarity, intensity = intensity):
             print(f"[Добавлено]")
             #print(f"[Добавлено] '{text}' → {tickers}")
         else:
