@@ -1,0 +1,15 @@
+requests~=2.32.3
+bs4~=0.0.2
+beautifulsoup4~=4.13.4
+feedparser~=6.0.11
+psycopg2~=2.9.10
+spacy
+rapidfuzz
+numpy
+datasketch
+transformers
+scikit-learn
+sentence_transformers
+annoy
+spicy
+ru-core-news-sm
