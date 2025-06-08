@@ -16,3 +16,5 @@ ru-core-news-sm
 psycopg2-binary~=2.9.10
 pgvector~=0.4.1
 sentence-transformers~=4.1.0
+aiogram
+sqlalchemy

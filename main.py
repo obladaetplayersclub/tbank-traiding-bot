@@ -3,6 +3,8 @@ import time
 import unique_checker
 import data_refactor
 import dbnews
+import start_bot
+import asyncio
 
 MAX_ITEMS = 3
 delay = 60
@@ -39,6 +41,7 @@ db_config = {
 if __name__ == "__main__":
 
     checker = dbnews.DBNewsDeduplicator(db_config)
+    asyncio.run(start_bot.main())
 
     print(f"Старт парсинга Finam, интервал {delay} с")
     while True:
