@@ -16,8 +16,9 @@ ru-core-news-sm
 psycopg2-binary~=2.9.10
 pgvector~=0.4.1
 sentence-transformers~=4.1.0
-aiogram
-sqlalchemy
-pytz
-apscheduler
-telethon
+aiogram~=3.20.0.post0
+sqlalchemy~=2.0.41
+pytz~=2025.2
+apscheduler~=3.11.0
+telethon~=1.40.0
+python-dotenv~=1.1.0
