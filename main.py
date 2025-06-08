@@ -2,6 +2,7 @@ from parsing.pars_finam import collect_set
 import time
 import unique_checker
 import data_refactor
+import dbnews
 
 MAX_ITEMS = 3
 delay = 60
@@ -27,9 +28,17 @@ ticker_lookup = {
     }
 ticker_list = list(ticker_lookup.values())
 
+db_config = {
+    "dbname": "postgres",
+    "user": "konstantinokriashvili",
+    "password": "1234",
+    "host": "localhost",
+    "port": 5432
+}
+
 if __name__ == "__main__":
 
-    checker = unique_checker.NewsDeduplicator(ticker_list)
+    checker = dbnews.DBNewsDeduplicator(db_config)
 
     print(f"Старт парсинга Finam, интервал {delay} с")
     while True:

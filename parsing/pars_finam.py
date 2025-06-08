@@ -35,9 +35,9 @@ def clean_html(raw: str) -> str:
 
 def format_pub_date(entry) -> str:
     if getattr(entry, "published_parsed", None):
-        ts = calendar.timegm(entry.published_parsed)               # всегда UTC
+        ts = calendar.timegm(entry.published_parsed)
         dt_utc = datetime.fromtimestamp(ts, tz=timezone.utc)
-    else:                                                           # fallback
+    else:
         dt_utc = datetime.now(timezone.utc)
 
     dt_msk = dt_utc.astimezone(MOSCOW_TZ)
@@ -80,7 +80,7 @@ def main():
             #news = collect_items(feed)
             #write_json(news)
             print(collect_set())
-            print("✓ Новости обновлены", flush=True)
+            print("Новости обновлены", flush=True)
         except Exception as err:
             print(f"‼ Ошибка: {err}", flush=True)
         time.sleep(delay)
